@@ -2,7 +2,7 @@ enum 50100 "Article Type"
 {
     Extensible = false;
 
-    value(0; Item)
+    value(0; "Base Item")
     {
         Caption = 'Articolo Base';
     }

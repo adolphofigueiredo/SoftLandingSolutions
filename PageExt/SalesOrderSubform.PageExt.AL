@@ -31,21 +31,60 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
                     ItemListPage: Page "Item List";
                 begin
                     Item.SetRange("Item Category Code", GetItemCategoryCode());
-                    ItemListPage.SetTableView(Item);
-                    ItemListPage.LookupMode(true);
+                    Item.FindSet();
+                    if item."Item Category Code" <> '' then begin
+                        ItemListPage.SetTableView(Item);
+                        ItemListPage.LookupMode(true);
 
-                    if ItemListPage.RunModal() = ACTION::LookupOK then begin
-                        ItemListPage.GetRecord(Item);
+                        if ItemListPage.RunModal() = ACTION::LookupOK then begin
+                            ItemListPage.GetRecord(Item);
 
-                        SalesLineInsert := GetCurretSalesLine();
-                        SalesLineInsert."Line No." := SalesLineInsert."Line No." - 10000;
+                            SalesLineInsert := GetCurretSalesLine();
+                            SalesLineInsert."Line No." := SalesLineInsert."Line No." - 10000;
 
-                        DeleteSalesLine := GetCurretSalesLine();
-                        DeleteSalesLine.Delete();
+                            DeleteSalesLine := GetCurretSalesLine();
+                            DeleteSalesLine.Delete();
 
-                        SalesLineInsert.AddItem(SalesLineInsert, Item."No.");
-                        SalesLineInsert."Item Type" := SalesLineInsert."Item Type"::"Item Customization";
-                        SalesLineInsert.Modify()
+                            SalesLineInsert.AddItem(SalesLineInsert, Item."No.");
+                            SalesLineInsert."Item Type" := SalesLineInsert."Item Type"::"Item Customization";
+                            SalesLineInsert.Modify()
+                        end;
+                    end else begin
+                        Message('l"articolo non ha un gruppo categoria');
+                    end;
+                end;
+            }
+            action(SetQuantity)
+            {
+                ApplicationArea = all;
+                Caption = 'Inserisci Quantita';
+                Image = AddAction;
+                trigger OnAction()
+                var
+                    SalesLine: Record "Sales Line";
+                    itemQuantity: Decimal;
+                    isTypeItem: Boolean;
+                    isTypeItemBase: Boolean;
+                    isTypeItemCust: Boolean;
+                    isTypeItemAddOn: Boolean;
+                begin
+                    SalesLine.SetRange("Document Type", Rec."Document Type"::Order);
+                    SalesLine.SetRange("Document No.", Rec."Document No.");
+                    if SalesLine.FindSet() then begin
+                        repeat begin
+                            isTypeItem := SalesLine.Type = SalesLine.Type::Item;
+                            isTypeItemBase := SalesLine."Item Type" = SalesLine."Item Type"::"Base Item";
+                            isTypeItemCust := SalesLine."Item Type" = SalesLine."Item Type"::"Item Customization";
+                            isTypeItemAddOn := SalesLine."Item Type" = SalesLine."Item Type"::"Add-on";
+                            if (isTypeItem) and (isTypeItemBase) then begin
+                                itemQuantity := SalesLine.Quantity;
+                            end;
+                            if (isTypeItem) and ((isTypeItemAddOn) or (isTypeItemCust)) then begin
+                                SalesLine.Quantity := itemQuantity;
+                                SalesLine.Modify();
+                            end;
+
+                        end until SalesLine.Next() = 0;
                     end;
                 end;
             }
@@ -62,26 +101,6 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
             SalesLine.FindSet();
             exit(SalesLine)
         end;
-    end;
-
-    internal procedure GetItemQuantity(currentRecord: Record "Sales Line"): Decimal
-    var
-        SalesLine: Record "Sales Line";
-        ItemQuantity: Decimal;
-    begin
-        SalesLine.SetRange("Document Type", currentRecord."Document Type"::Order);
-        SalesLine.SetRange("Document No.", currentRecord."Document No.");
-        SalesLine.SetRange("Line No.", 0, currentRecord."Line No.");
-        SalesLine.SetAscending("Line No.", false);
-        if SalesLine.FindSet() then begin
-            repeat begin
-                if (SalesLine.Type = SalesLine.Type::Item) and (SalesLine."Item Type" = SalesLine."Item Type"::Item) then begin
-                    ItemQuantity := SalesLine.Quantity;
-                    break
-                end;
-            end until SalesLine.Next() = 0;
-        end;
-        exit(ItemQuantity)
     end;
 
     internal procedure GetItemCategoryCode(): Code[20]
