@@ -170,7 +170,7 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
 
             LineNo += 10000;
             SalesLines."Document Type" := Rec."Document Type";
-            SalesLines."Document No." := rec."Document No.";
+            SalesLines."Document No." := Rec."Document No.";
             SalesLines."Line No." := LineNo;
             SalesLines.Delete();
 
