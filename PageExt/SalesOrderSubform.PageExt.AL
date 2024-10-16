@@ -156,9 +156,26 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
     end;
 
     trigger OnDeleteRecord(): Boolean
+
     var
-        myInt: Integer;
+
+        SalesLines: Record "Sales Line";
+        LineNo: Integer;
+
     begin
+
+        LineNo := Rec."Line No.";
+
+        repeat begin
+
+            LineNo += 10000;
+            SalesLines."Document Type" := Rec."Document Type";
+            SalesLines."Document No." := rec."Document No.";
+            SalesLines."Line No." := LineNo;
+            SalesLines.Delete();
+
+        end until SalesLines.Next() = 0;
+
         // devi fare in modo che l'utente se cancella un record di tipo SalesLine."Item Type"::"Base Item"
         // allora deve cancellare tutte le rige nella sales line fin quando non inconta un altra riga di tipo SalesLine."Item Type"::"Base Item"
         // e se invece l'utente cancella una lina di tipo SalesLine."Item Type"::"Add-On" gli cancella solo quella riga
