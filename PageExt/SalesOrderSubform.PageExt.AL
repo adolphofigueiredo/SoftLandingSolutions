@@ -1,10 +1,13 @@
 pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform"
 {
+
+    // da implementare in futuro o anche subito
+    // fare in modo che la locatio code sia sempre vuota
     layout
     {
         addafter("No.")
         {
-            field("Item Type"; Rec."Item Type")
+            field("Item Type"; Rec."Item Type") // qui dovra essere un flow field che prende dal item "Item Type"
             {
                 Visible = true;
                 Editable = false;
@@ -14,13 +17,14 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
 
     actions
     {
-        addafter(SelectMultiItems)
+        addafter("&Line")
         {
             action(CommentToArticle)
             {
                 AccessByPermission = TableData "Item" = R;
                 ApplicationArea = all;
                 Caption = 'Customiza Articolo';
+                Scope = Repeater;
                 Image = Edit;
                 trigger OnAction()
                 var
@@ -47,49 +51,60 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
 
                             SalesLineInsert.AddItem(SalesLineInsert, Item."No.");
                             SalesLineInsert."Item Type" := SalesLineInsert."Item Type"::"Item Customization";
-                            SalesLineInsert.Modify()
+                            SalesLineInsert.Modify();
+                            setAllQuantity();
                         end;
                     end else begin
                         Message('l"articolo non ha un gruppo categoria');
                     end;
                 end;
             }
+        }
+        addafter(SelectMultiItems)
+        {
             action(SetQuantity)
             {
                 ApplicationArea = all;
-                Caption = 'Inserisci Quantita';
+                Caption = 'Inserisci quantita a le customizazioni';
                 Image = AddAction;
                 trigger OnAction()
                 var
-                    SalesLine: Record "Sales Line";
-                    itemQuantity: Decimal;
-                    isTypeItem: Boolean;
-                    isTypeItemBase: Boolean;
-                    isTypeItemCust: Boolean;
-                    isTypeItemAddOn: Boolean;
                 begin
-                    SalesLine.SetRange("Document Type", Rec."Document Type"::Order);
-                    SalesLine.SetRange("Document No.", Rec."Document No.");
-                    if SalesLine.FindSet() then begin
-                        repeat begin
-                            isTypeItem := SalesLine.Type = SalesLine.Type::Item;
-                            isTypeItemBase := SalesLine."Item Type" = SalesLine."Item Type"::"Base Item";
-                            isTypeItemCust := SalesLine."Item Type" = SalesLine."Item Type"::"Item Customization";
-                            isTypeItemAddOn := SalesLine."Item Type" = SalesLine."Item Type"::"Add-on";
-                            if (isTypeItem) and (isTypeItemBase) then begin
-                                itemQuantity := SalesLine.Quantity;
-                            end;
-                            if (isTypeItem) and ((isTypeItemAddOn) or (isTypeItemCust)) then begin
-                                SalesLine.Quantity := itemQuantity;
-                                SalesLine.Modify();
-                            end;
-
-                        end until SalesLine.Next() = 0;
-                    end;
+                    setAllQuantity();
                 end;
             }
         }
     }
+    internal procedure setAllQuantity()
+    var
+        SalesLine: Record "Sales Line";
+        SalesSetup: Record "Sales & Receivables Setup";
+        itemQuantity: Decimal;
+        isTypeItem: Boolean;
+        isTypeItemBase: Boolean;
+        isTypeItemCust: Boolean;
+        isTypeItemAddOn: Boolean;
+    begin
+        SalesLine.SetRange("Document Type", Rec."Document Type"::Order);
+        SalesLine.SetRange("Document No.", Rec."Document No.");
+        if SalesLine.FindSet() then begin
+            repeat begin
+                isTypeItem := SalesLine.Type = SalesLine.Type::Item;
+                isTypeItemBase := SalesLine."Item Type" = SalesLine."Item Type"::"Base Item";
+                isTypeItemCust := SalesLine."Item Type" = SalesLine."Item Type"::"Item Customization";
+                isTypeItemAddOn := SalesLine."Item Type" = SalesLine."Item Type"::"Add-on";
+                if (isTypeItem) and (isTypeItemBase) then begin
+                    itemQuantity := SalesLine.Quantity;
+                end;
+                if (isTypeItem) and ((isTypeItemAddOn) or (isTypeItemCust)) then begin
+                    SalesLine.Quantity := itemQuantity;
+                    SalesLine.Validate(Quantity, itemQuantity);
+                    SalesLine.Modify();
+                end;
+            end until SalesLine.Next() = 0;
+        end;
+    end;
+
     internal procedure GetCurretSalesLine(): Record "Sales Line"
     var
         SalesLine: Record "Sales Line";
@@ -123,6 +138,7 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
         addLineNo: Integer;
     begin
         addLineNo := Rec."Line No.";
+        // controllo che fa eseguire il codice qui sotto solo se e di "Item Type"::"Base Item"
         DbProduzioneLine.SetRange("Production BOM No.", Rec."No.");
         repeat begin
             if DbProduzioneLine.Description <> '' then begin
@@ -131,7 +147,7 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
                 SalesLines."Document No." := rec."Document No.";
                 SalesLines."Line No." := addLineNo;
                 SalesLines.Description := '    ' + DbProduzioneLine.Description;
-                SalesLines."Item Type" := SalesLines."Item Type"::"Item Customization";
+                SalesLines."Item Type" := SalesLines."Item Type"::"Item Customization"; //o lo insercrisci qui oppure fai il flow field sopra qui devi cambiare che prede dal item il tipo di "Item Type"
                 SalesLines.Insert();
             end;
         end until DbProduzioneLine.Next() = 0;
@@ -141,6 +157,12 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
     var
         myInt: Integer;
     begin
-
+        // devi fare in modo che l'utente se cancella un record di tipo SalesLine."Item Type"::"Base Item"
+        // allora deve cancellare tutte le rige nella sales line fin quando non inconta un altra riga di tipo SalesLine."Item Type"::"Base Item"
+        // e se invece l'utente cancella una lina di tipo SalesLine."Item Type"::"Add-On" gli cancella solo quella riga
+        // e se cerca di cancellare una riga di tipo SalesLine."Item Type"::"Item Customization" deve lancare ( trow error ) un errore e mostarlo a schermo (try chatch)
     end;
 }
+
+
+// devi fare una page ext del item dove inserisci un campo che specifica "Item Type" e deve essere visibile e obbligatorio.
