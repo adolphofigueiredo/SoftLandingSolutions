@@ -2,7 +2,8 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
 {
 
     // da implementare in futuro o anche subito
-    // fare in modo che la locatio code sia sempre vuota
+    // fare in modo che la locatio code sia sempre vuota (SalesOrder.PageExt.al)
+
     layout
     {
         addafter("No.")
@@ -55,7 +56,7 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
                             setAllQuantity();
                         end;
                     end else begin
-                        Message('l"articolo non ha un gruppo categoria');
+                        Message('L''''articolo non ha un gruppo categoria');
                     end;
                 end;
             }
@@ -71,6 +72,7 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
                 var
                 begin
                     setAllQuantity();
+                    //Forse aggiungere una procedura per cancelare Location Code
                 end;
             }
         }
@@ -163,6 +165,3 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
         // e se cerca di cancellare una riga di tipo SalesLine."Item Type"::"Item Customization" deve lancare ( trow error ) un errore e mostarlo a schermo (try chatch)
     end;
 }
-
-
-// devi fare una page ext del item dove inserisci un campo che specifica "Item Type" e deve essere visibile e obbligatorio.
