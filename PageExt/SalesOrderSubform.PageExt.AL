@@ -51,7 +51,7 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
                             DeleteSalesLine.Delete();
 
                             SalesLineInsert.AddItem(SalesLineInsert, Item."No.");
-                            SalesLineInsert."Item Type" := SalesLineInsert."Item Type"::"Item Customization";
+                            SalesLineInsert."Item Type" := Item."Item Type";
                             SalesLineInsert.Modify();
                             setAllQuantity();
                         end;
