@@ -9,6 +9,33 @@ pageextension 50103 "Item List Extension" extends "Item List"
                 Caption = 'Item Type';
             }
 
+
+        }
+        modify("Default Deferral Template Code")
+        {
+            Visible = false;
+        }
+
+        modify("Cost is Adjusted")
+        {
+            Visible = false;
+        }
+        modify("Routing No.")
+        {
+            Visible = false;
+        }
+        modify("Production BOM No.")
+        {
+            Visible = false;
+        }
+
+        modify("Assembly BOM")
+        {
+            Visible = false;
+        }
+        modify("Search Description")
+        {
+            Visible = false;
         }
     }
 
