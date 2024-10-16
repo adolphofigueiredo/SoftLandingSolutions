@@ -20,7 +20,7 @@ pageextension 50100 "Sales Order Ext" extends "Sales Order"
                     SalesLineRecord.SetRange("Document No.", Rec."No.");
                     if SalesLineRecord.FindSet() then begin
                         repeat begin
-                            if SalesLineRecord."Item Type"= SalesLineRecord."Item Type"::"Base Item"  then begin
+                            if SalesLineRecord."Item Type" = SalesLineRecord."Item Type"::"Base Item" then begin
 
                             end;
                         end until SalesLineRecord.Next = 0;
@@ -37,17 +37,18 @@ pageextension 50100 "Sales Order Ext" extends "Sales Order"
         ProdOrder: Record "Production Order";
     begin
         CodeunitPorductionOrder.CreateProductionOrder(SalesLineRecord, "Create Production Order Status"::Planned, "Create Production Order Type"::ItemOrder);
-        ProdOrder.SetRange(ProdOrder."Sales Order No.",SalesLineRecord."Document No.");
-        
-        if BooleanExpression then begin
-            
-        end;
-            ProdOrder.Reset();
-            ProdOrder.SetRange(ProdOrder."Sales Order No.", '');
-            if ProdOrder.FindSet() then begin
-                ProdOrder."Sales Order No." := SalesLineRecord."Document No.";
-                ProdOrder.Modify()
-            end;
     end;
 
+    local procedure isOrderAlreadyCreated(var "SalesLineDocumentNo.": Code[20]): Boolean
+    var
+        isAlreadyCreated: Boolean;
+        ProdOrder: Record "Production Order";
+    begin
+        ProdOrder.SetRange(ProdOrder."Sales Order No.", "SalesLineDocumentNo.");
+        if ProdOrder.FindSet() then begin
+            isAlreadyCreated := true;
+        end;
+        isAlreadyCreated := false;
+        exit(isAlreadyCreated)
+    end;
 }
