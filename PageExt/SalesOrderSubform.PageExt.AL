@@ -137,6 +137,9 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
     var
         SalesLines: Record "Sales Line";
         DbProduzioneLine: Record "Production BOM Line";
+
+        //item: Record item;                     Riga aggiunta
+
         addLineNo: Integer;
     begin
         addLineNo := Rec."Line No.";
@@ -149,7 +152,11 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
                 SalesLines."Document No." := rec."Document No.";
                 SalesLines."Line No." := addLineNo;
                 SalesLines.Description := '    ' + DbProduzioneLine.Description;
-                SalesLines."Item Type" := SalesLines."Item Type"::"Item Customization"; //o lo insercrisci qui oppure fai il flow field sopra qui devi cambiare che prede dal item il tipo di "Item Type"
+
+                //item.SetRange(item."No.", Rec."No.");             Riga aggiunta
+                //SalesLines."Item Type" := item."Item Type";       Riga aggiunta
+
+                //Questa riga hai messo però ho disabilitato //SalesLines."Item Type" := SalesLines."Item Type"::"Item Customization"; //o lo insercrisci qui oppure fai il flow field sopra qui devi cambiare che prede dal item il tipo di "Item Type"
                 SalesLines.Insert();
             end;
         end until DbProduzioneLine.Next() = 0;
