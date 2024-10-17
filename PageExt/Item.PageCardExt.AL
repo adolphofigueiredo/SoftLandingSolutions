@@ -7,6 +7,7 @@ pageextension 50102 "Item Page Extension" extends "Item Card"
             field("Item Type"; Rec."Item Type")
             {
                 Caption = 'Item Type';
+                ApplicationArea = all;
                 ShowMandatory = true;
                 BlankZero = true;
             }

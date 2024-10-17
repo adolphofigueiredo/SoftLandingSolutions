@@ -7,6 +7,7 @@ pageextension 50103 "Item List Extension" extends "Item List"
             field("Item Type"; Rec."Item Type")
             {
                 Caption = 'Item Type';
+                ApplicationArea = all;
             }
 
 

@@ -8,10 +8,11 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
     {
         addafter("No.")
         {
-            field("Item Type"; Rec."Item Type") // qui dovra essere un flow field che prende dal item "Item Type"
+            field("Item Type"; Rec."Item Type")
             {
                 Visible = true;
                 Editable = false;
+                ApplicationArea = all;
             }
         }
     }
@@ -72,7 +73,6 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
                 var
                 begin
                     setAllQuantity();
-                    //Forse aggiungere una procedura per cancelare Location Code
                 end;
             }
         }
@@ -137,9 +137,6 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
     var
         SalesLines: Record "Sales Line";
         DbProduzioneLine: Record "Production BOM Line";
-
-        //item: Record item;                     Riga aggiunta
-
         addLineNo: Integer;
     begin
         addLineNo := Rec."Line No.";
@@ -152,37 +149,25 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
                 SalesLines."Document No." := rec."Document No.";
                 SalesLines."Line No." := addLineNo;
                 SalesLines.Description := '    ' + DbProduzioneLine.Description;
-
-                //item.SetRange(item."No.", Rec."No.");             Riga aggiunta
-                //SalesLines."Item Type" := item."Item Type";       Riga aggiunta
-
-                //Questa riga hai messo però ho disabilitato //SalesLines."Item Type" := SalesLines."Item Type"::"Item Customization"; //o lo insercrisci qui oppure fai il flow field sopra qui devi cambiare che prede dal item il tipo di "Item Type"
+                SalesLines."No." := DbProduzioneLine."No.";
                 SalesLines.Insert();
             end;
         end until DbProduzioneLine.Next() = 0;
     end;
 
     trigger OnDeleteRecord(): Boolean
-
     var
-
         SalesLines: Record "Sales Line";
         LineNo: Integer;
-
     begin
-
         LineNo := Rec."Line No.";
-
         repeat begin
-
             LineNo += 10000;
             SalesLines."Document Type" := Rec."Document Type";
             SalesLines."Document No." := Rec."Document No.";
             SalesLines."Line No." := LineNo;
             SalesLines.Delete();
-
         end until SalesLines.Next() = 0;
-
         // devi fare in modo che l'utente se cancella un record di tipo SalesLine."Item Type"::"Base Item"
         // allora deve cancellare tutte le rige nella sales line fin quando non inconta un altra riga di tipo SalesLine."Item Type"::"Base Item"
         // e se invece l'utente cancella una lina di tipo SalesLine."Item Type"::"Add-On" gli cancella solo quella riga
