@@ -136,6 +136,7 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
     trigger OnInsertRecord(BelowxRec: Boolean): Boolean
     var
         SalesLines: Record "Sales Line";
+        itemRecord: Record Item;
         DbProduzioneLine: Record "Production BOM Line";
         addLineNo: Integer;
     begin
@@ -150,6 +151,9 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
                 SalesLines."Line No." := addLineNo;
                 SalesLines.Description := '    ' + DbProduzioneLine.Description;
                 SalesLines."No." := DbProduzioneLine."No.";
+                if itemRecord.Get(SalesLines."No.") then begin
+                    SalesLines."Item Type" := itemRecord."Item Type";
+                end;
                 SalesLines.Insert();
             end;
         end until DbProduzioneLine.Next() = 0;
