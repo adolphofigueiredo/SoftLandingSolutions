@@ -39,7 +39,7 @@ pageextension 50100 "Sales Order Ext" extends "Sales Order"
                             end;
                         end until SalesLine.Next = 0;
                     end else begin
-                        Message('Non ci Sono Articoli da mettere in produzione');
+                        Message('Non ci sono articoli da mettere in produzione.');
                     end;
                 end;
             }
