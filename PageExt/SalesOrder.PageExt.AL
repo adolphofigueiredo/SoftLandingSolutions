@@ -33,9 +33,7 @@ pageextension 50100 "Sales Order Ext" extends "Sales Order"
                                 end;
                                 if IsItemArticleType(SalesLine, SalesLine."Item Type"::"Add-on") then begin
                                     if isOrderAlreadyCreated(SalesLine."Document No.") then begin
-                                        // aggiungo l`item nella table 5407
-                                    end else begin
-                                        // lancio un errore grave
+                                        InsertProductionComponent(SalesLine);
                                     end;
                                 end;
                             end;
@@ -47,20 +45,27 @@ pageextension 50100 "Sales Order Ext" extends "Sales Order"
             }
         }
     }
-
-    internal procedure ModifyProductionComponent(SalesLine: Record "Sales Line")
+    internal procedure ModifyProductionComponent(SalesLine: Record "Sales Line") //fizare il modifica perhce non posso cercare il setcon item no stessa roba per l'insert
     var
         ProductionOrder: Record "Production Order";
         ProductionComponet: Record "Prod. Order Component";
+        ProdOrderSubscriver: Codeunit "Prod. Order Subscriver";
+        ProdItem: Record Item;
+        SalesItem: Record Item;
     begin
-        ProductionOrder.SetRange("Sales Order No.", '');
-        ProductionOrder.FindSet();
+        SalesItem.Get(SalesLine."No.");
+        ProductionOrder := ProdOrderSubscriver.GetCreatedProductionOrder();
         ProductionComponet.SetRange("Prod. Order No.", ProductionOrder."No.");
-        ProductionComponet.SetRange("Item No.", SalesLine."No.");
-        ProductionComponet.FindSet();
-        ProductionComponet."Item No." := SalesLine."No.";
-        ProductionComponet.Description := SalesLine.Description;
-        ProductionComponet.Modify();
+        if ProductionComponet.FindSet() then begin
+            repeat begin
+                prodItem.Get(ProductionComponet."Item No.");
+                if prodItem."Item Category Code" = SalesItem."Item Category Code" then begin
+                    ProductionComponet."Item No." := SalesLine."No.";
+                    ProductionComponet.Description := SalesLine.Description.TrimStart();
+                    ProductionComponet.Modify();
+                end;
+            end until ProductionComponet.Next() = 0;
+        end;
     end;
 
     internal procedure InsertProductionComponent(SalesLine: Record "Sales Line")
@@ -68,9 +73,9 @@ pageextension 50100 "Sales Order Ext" extends "Sales Order"
         ProductionOrder: Record "Production Order";
         ProductionComponet: Record "Prod. Order Component";
         CopyProductionComponet: Record "Prod. Order Component";
+        ProdOrderSubscriver: Codeunit "Prod. Order Subscriver";
     begin
-        ProductionOrder.SetRange("Sales Order No.", '');
-        ProductionOrder.FindSet();
+        ProductionOrder := ProdOrderSubscriver.GetCreatedProductionOrder();
         ProductionComponet.SetRange("Prod. Order No.", ProductionOrder."No.");
         ProductionComponet.FindLast();
         CopyProductionComponet := ProductionComponet;
@@ -83,16 +88,15 @@ pageextension 50100 "Sales Order Ext" extends "Sales Order"
     internal procedure CreateProductionOrder(var SalesLineRecord: Record "Sales Line")
     var
         CodeunitPorductionOrder: Codeunit "Create Prod. Order from Sale";
-        ProdOrder: Record "Production Order";
     begin
         CodeunitPorductionOrder.CreateProductionOrder(SalesLineRecord, "Create Production Order Status"::Planned, "Create Production Order Type"::ItemOrder);
-        // ma chi ha sviluppato la sand-box microsoft?? non ce una variabile di ritorno che ti dice se ha creato si o no la produzione...
     end;
 
     internal procedure IsItemArticleType(var SalesLineRecor: Record "Sales Line"; Type: Enum "Article Type"): Boolean
     var
         isType: Boolean;
     begin
+        isType := false;
         isType := (SalesLineRecor.Type = SalesLineRecor.Type::Item) and (SalesLineRecor."Item Type" = type);
         exit(isType)
     end;
@@ -101,12 +105,20 @@ pageextension 50100 "Sales Order Ext" extends "Sales Order"
     var
         isAlreadyCreated: Boolean;
         ProdOrder: Record "Production Order";
+        CreatedProdOrd: Record "Production Order";
+        ProdOrderSubscriver: Codeunit "Prod. Order Subscriver";
+
     begin
-        ProdOrder.SetRange(ProdOrder."Sales Order No.", "SalesLineDocumentNo.");
-        if ProdOrder.FindSet() then begin
-            isAlreadyCreated := true;
-        end;
         isAlreadyCreated := false;
+        ProdOrder.SetRange("Sales Order No.", "SalesLineDocumentNo.");
+        CreatedProdOrd := ProdOrderSubscriver.GetCreatedProductionOrder();
+        if ProdOrder.FindSet() then begin
+            repeat begin
+                if ProdOrder."No." = CreatedProdOrd."No." then begin
+                    isAlreadyCreated := true;
+                end;
+            end until ProdOrder.Next() = 0;
+        end;
         exit(isAlreadyCreated)
     end;
 }
