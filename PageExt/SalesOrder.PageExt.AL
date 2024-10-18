@@ -29,8 +29,6 @@ pageextension 50100 "Sales Order Ext" extends "Sales Order"
                                 if IsItemArticleType(SalesLine, SalesLine."Item Type"::"Item Customization") then begin
                                     if isOrderAlreadyCreated(SalesLine."Document No.") then begin
                                         ModifyProductionComponent(SalesLine);
-                                    end else begin
-                                        // lancio un errore grave
                                     end;
                                 end;
                                 if IsItemArticleType(SalesLine, SalesLine."Item Type"::"Add-on") then begin
@@ -69,16 +67,17 @@ pageextension 50100 "Sales Order Ext" extends "Sales Order"
     var
         ProductionOrder: Record "Production Order";
         ProductionComponet: Record "Prod. Order Component";
+        CopyProductionComponet: Record "Prod. Order Component";
     begin
         ProductionOrder.SetRange("Sales Order No.", '');
         ProductionOrder.FindSet();
         ProductionComponet.SetRange("Prod. Order No.", ProductionOrder."No.");
-        ProductionComponet.SetRange("Item No.", SalesLine."No.");
-        ProductionComponet.FindSet();
-        ProductionComponet.Init();
-        ProductionComponet."Item No." := SalesLine."No.";
-        ProductionComponet.Description := SalesLine.Description;
-        ProductionComponet.Modify();
+        ProductionComponet.FindLast();
+        CopyProductionComponet := ProductionComponet;
+        CopyProductionComponet."Line No." += 10000;
+        CopyProductionComponet."Item No." := SalesLine."No.";
+        CopyProductionComponet.Description := SalesLine.Description;
+        CopyProductionComponet.Insert();
     end;
 
     internal procedure CreateProductionOrder(var SalesLineRecord: Record "Sales Line")
