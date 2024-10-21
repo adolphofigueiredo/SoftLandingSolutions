@@ -11,9 +11,6 @@ pageextension 50106 "Production Order List Ext" extends "Production Order List"
                 Editable = false;
                 TableRelation = "Sales Header"."No." where("Document Type" = const(Order));
 
-
-
-
             }
         }
 
@@ -26,8 +23,6 @@ pageextension 50106 "Production Order List Ext" extends "Production Order List"
         {
             Visible = false;
         }
-
-
 
     }
 
