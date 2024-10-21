@@ -8,8 +8,8 @@ pageextension 50106 "Production Order List Ext" extends "Production Order List"
             field("Sales Order No."; Rec."Sales Order No.")
             {
                 ApplicationArea = all;
-
-                //Lookup("Sales Order List" where ( "No."= field(Rec."Sales Order No.")));
+                Editable = false;
+                TableRelation = "Sales Header"."No." where("Document Type" = const(Order));
 
 
 
