@@ -7,9 +7,12 @@ pageextension 50106 "Production Order List Ext" extends "Production Order List"
         {
             field("Sales Order No."; Rec."Sales Order No.")
             {
-                //ApplicationArea =  all;
+                ApplicationArea = all;
 
-                //Lookup("Sales Order Lsit" where ("No." = field(Rec."Sales Order No.")));
+                //Lookup("Sales Order List" where ( "No."= field(Rec."Sales Order No.")));
+
+
+
 
             }
         }
@@ -30,8 +33,6 @@ pageextension 50106 "Production Order List Ext" extends "Production Order List"
 
     actions
     {
-
-
 
     }
 
