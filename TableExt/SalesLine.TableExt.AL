@@ -17,6 +17,7 @@ tableextension 50100 "Sales Line Extension" extends "Sales Line"
         {
             Caption = 'Item Type';
             Editable = false;
+            
         }
     }
 

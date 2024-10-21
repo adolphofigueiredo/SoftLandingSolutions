@@ -22,19 +22,13 @@ pageextension 50100 "Sales Order Ext" extends "Sales Order"
                         repeat begin
                             if SalesLine.Type <> SalesLine.Type::" " then begin
                                 if IsItemArticleType(SalesLine, SalesLine."Item Type"::"Base Item") then begin
-                                    if not (isOrderAlreadyCreated(SalesLine."Document No.")) then begin
-                                        CreateProductionOrder(SalesLine);
-                                    end;
+                                    CreateProductionOrder(SalesLine);
                                 end;
                                 if IsItemArticleType(SalesLine, SalesLine."Item Type"::"Item Customization") then begin
-                                    if isOrderAlreadyCreated(SalesLine."Document No.") then begin
-                                        ModifyProductionComponent(SalesLine);
-                                    end;
+                                    ModifyProductionComponent(SalesLine);
                                 end;
                                 if IsItemArticleType(SalesLine, SalesLine."Item Type"::"Add-on") then begin
-                                    if isOrderAlreadyCreated(SalesLine."Document No.") then begin
-                                        InsertProductionComponent(SalesLine);
-                                    end;
+                                    InsertProductionComponent(SalesLine);
                                 end;
                             end;
                         end until SalesLine.Next = 0;
@@ -45,7 +39,7 @@ pageextension 50100 "Sales Order Ext" extends "Sales Order"
             }
         }
     }
-    internal procedure ModifyProductionComponent(SalesLine: Record "Sales Line") //fizare il modifica perhce non posso cercare il setcon item no stessa roba per l'insert
+    internal procedure ModifyProductionComponent(SalesLine: Record "Sales Line")
     var
         ProductionOrder: Record "Production Order";
         ProductionComponet: Record "Prod. Order Component";
@@ -99,26 +93,5 @@ pageextension 50100 "Sales Order Ext" extends "Sales Order"
         isType := false;
         isType := (SalesLineRecor.Type = SalesLineRecor.Type::Item) and (SalesLineRecor."Item Type" = type);
         exit(isType)
-    end;
-
-    local procedure isOrderAlreadyCreated(var "SalesLineDocumentNo.": Code[20]): Boolean
-    var
-        isAlreadyCreated: Boolean;
-        ProdOrder: Record "Production Order";
-        CreatedProdOrd: Record "Production Order";
-        ProdOrderSubscriver: Codeunit "Prod. Order Subscriver";
-
-    begin
-        isAlreadyCreated := false;
-        ProdOrder.SetRange("Sales Order No.", "SalesLineDocumentNo.");
-        CreatedProdOrd := ProdOrderSubscriver.GetCreatedProductionOrder();
-        if ProdOrder.FindSet() then begin
-            repeat begin
-                if ProdOrder."No." = CreatedProdOrd."No." then begin
-                    isAlreadyCreated := true;
-                end;
-            end until ProdOrder.Next() = 0;
-        end;
-        exit(isAlreadyCreated)
     end;
 }
