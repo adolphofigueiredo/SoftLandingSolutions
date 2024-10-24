@@ -75,7 +75,7 @@ pageextension 50100 "Sales Order Ext" extends "Sales Order"
         CopyProductionComponet := ProductionComponet;
         CopyProductionComponet."Line No." += 10000;
         CopyProductionComponet."Item No." := SalesLine."No.";
-        CopyProductionComponet.Description := SalesLine.Description;
+        CopyProductionComponet.Description := SalesLine.Description.TrimStart();
         CopyProductionComponet.Insert();
     end;
 
