@@ -11,6 +11,11 @@ pageextension 50102 "Item Page Extension" extends "Item Card"
                 ShowMandatory = true;
                 BlankZero = true;
             }
+            field("Charge Item"; Rec."Charge Item")
+            {
+                Caption = 'Charge Item';
+                ApplicationArea = all;
+            }
         }
     }
 

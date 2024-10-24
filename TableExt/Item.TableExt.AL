@@ -6,6 +6,12 @@ tableextension 50102 "Item Table Extension" extends Item
         {
             Caption = 'Item Type';
         }
+
+        field(50101; "Charge Item"; Code[20])
+        {
+            Caption = 'Charge Item';
+            TableRelation = "Item Charge";
+        }
     }
 
     keys
