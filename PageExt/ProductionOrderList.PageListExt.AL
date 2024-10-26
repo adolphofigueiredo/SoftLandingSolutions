@@ -10,20 +10,13 @@ pageextension 50106 "Production Order List Ext" extends "Production Order List"
                 ApplicationArea = all;
                 Editable = false;
                 TableRelation = "Sales Header"."No." where("Document Type" = const(Order));
-
             }
-
-            field("Prod. cycle line"; Rec."Prod. cycle line")
-            {
-                ApplicationArea = all;
-            }
-            field("Prod. cycle amount"; Rec."Prod. cycle amount")
-            {
-                ApplicationArea = all;
-
-            }
-
             field("Prod. cycles number"; Rec."Prod. cycles number")
+            {
+                ApplicationArea = all;
+                Visible = false;
+            }
+            field("Prod. cycle line"; Rec."Prod. cycle line")
             {
                 ApplicationArea = all;
             }
@@ -44,20 +37,58 @@ pageextension 50106 "Production Order List Ext" extends "Production Order List"
 
     actions
     {
-
+        addafter("E&ntries")
+        {
+            action(ActionName)
+            {
+                Caption = 'Dio porco';
+                ApplicationArea = all;
+                Visible = true;
+                trigger OnAction()
+                begin
+                    CalcProdCycleLine();
+                    CurrPage.Update();
+                end;
+            }
+        }
     }
-    trigger OnOpenPage()
+    internal procedure CalcProdCycleLine()
     var
-        ProductionOrder: Record "Production Order";
+        ProdOrder: Record "Production Order";
+        ProductionJrnlMgt: Codeunit "Production Journal Mgt";
+        gg: Codeunit gg;
     begin
-        ProductionOrder.FindSet();
+        ProdOrder.FindSet();
         repeat begin
-            if ProductionOrder.Status = ProductionOrder.Status::Released then begin
-                ProductionOrder.CalcFields(ProductionOrder."Prod. cycles number", ProductionOrder."Prod. cycle amount");
-                ProductionOrder."Prod. cycle line" := Format(ProductionOrder."Prod. cycle amount") + ' / ' + Format(ProductionOrder."Prod. cycles number");
-                ProductionOrder.Modify();
+            if ProdOrder.Status = ProdOrder.Status::Released then begin
+                Clear(ProductionJrnlMgt);
+                ProductionJrnlMgt.SetTemplateAndBatchName();
+                ProductionJrnlMgt.InitSetupValues();
+                ProductionJrnlMgt.DeleteJnlLines(gg.GetTamplateName(), gg.GetBatchName(), ProdOrder."No.", 10000);
+                ProductionJrnlMgt.CreateJnlLines(ProdOrder, 10000);
+                ProdOrder.CalcFields(ProdOrder."Prod. cycles number");
+                ProdOrder."Prod. cycle line" := Format(CalcolaStato(ProdOrder)) + ' / ' + Format(ProdOrder."Prod. cycles number");
+                ProdOrder.Modify();
             end;
-        end until ProductionOrder.Next() = 0;
+        end until ProdOrder.Next() = 0;
+
+    end;
+
+    internal procedure CalcolaStato(var ProdOrder: Record "Production Order"): Integer
+    var
+        i: Integer;
+        ItemJournalLine: Record "Item Journal Line";
+    begin
+        i := 0;
+        ItemJournalLine.SetRange("Document No.", ProdOrder."No.");
+        ItemJournalLine.SetRange("Gen. Prod. Posting Group", 'MANUFACT');
+        ItemJournalLine.SetRange(Quantity, 0);
+        if ItemJournalLine.FindSet() then begin
+            repeat begin
+                i += 1;
+            end until ItemJournalLine.Next() = 0;
+        end;
+        exit(i)
     end;
 
     var
