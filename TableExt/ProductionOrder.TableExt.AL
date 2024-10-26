@@ -25,13 +25,6 @@ tableextension 50101 "Production Order Ext" extends "Production Order"
         {
             Editable = false; // non editabile
             Caption = 'Linea ciclo di produzione'; // etichetta in italiano
-
-            trigger OnLookup()
-            begin
-                // Mostra il testo formattato '%1 to %2'
-                "Prod. cycle line" := StrSubstNo('%1 to %2', "Prod. cycle amount", "Prod. cycles number");
-            end;
         }
-
     }
 }
