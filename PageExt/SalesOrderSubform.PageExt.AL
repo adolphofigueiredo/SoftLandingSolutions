@@ -52,6 +52,7 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
                             DeleteSalesLine.Delete();
 
                             SalesLineInsert.AddItem(SalesLineInsert, Item."No.");
+                            SalesLineInsert."Qty. to Ship" := 0;
                             SalesLineInsert."Item Type" := Item."Item Type";
                             SalesLineInsert.Modify();
                             setAllQuantity();
@@ -86,6 +87,7 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
         isTypeItemBase: Boolean;
         isTypeItemCust: Boolean;
         isTypeItemAddOn: Boolean;
+        isTypeCharge: Boolean;
     begin
         SalesLine.SetRange("Document Type", Rec."Document Type"::Order);
         SalesLine.SetRange("Document No.", Rec."Document No.");
@@ -95,12 +97,19 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
                 isTypeItemBase := SalesLine."Item Type" = SalesLine."Item Type"::"Base Item";
                 isTypeItemCust := SalesLine."Item Type" = SalesLine."Item Type"::"Item Customization";
                 isTypeItemAddOn := SalesLine."Item Type" = SalesLine."Item Type"::"Add-on";
+                isTypeCharge := SalesLine.Type = SalesLine.Type::"Charge (Item)";
                 if (isTypeItem) and (isTypeItemBase) then begin
                     itemQuantity := SalesLine.Quantity;
                 end;
                 if (isTypeItem) and ((isTypeItemAddOn) or (isTypeItemCust)) then begin
                     SalesLine.Quantity := itemQuantity;
                     SalesLine.Validate(Quantity, itemQuantity);
+                    SalesLine.Modify();
+                end;
+                if (isTypeCharge) and (isTypeItemCust) then begin
+                    SalesLine.Quantity := itemQuantity;
+                    SalesLine.Validate(Quantity, itemQuantity);
+                    SalesLine."Qty. to Ship" := 0;
                     SalesLine.Modify();
                 end;
             end until SalesLine.Next() = 0;
@@ -139,6 +148,7 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
         itemRecord: Record Item;
         DbProduzioneLine: Record "Production BOM Line";
         addLineNo: Integer;
+        ChargeItem: Record "Item Charge";
     begin
         addLineNo := Rec."Line No.";
         // controllo che fa eseguire il codice qui sotto solo se e di "Item Type"::"Base Item"
@@ -157,5 +167,17 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
                 SalesLines.Insert();
             end;
         end until DbProduzioneLine.Next() = 0;
+        itemRecord.Get(Rec."No.");
+        if ChargeItem.Get(itemRecord."Charge Item") then begin
+            addLineNo += 10000;
+            SalesLines."Document Type" := Rec."Document Type";
+            SalesLines."Document No." := rec."Document No.";
+            SalesLines."Line No." := addLineNo;
+            SalesLines.Description := ChargeItem.Description;
+            SalesLines."No." := ChargeItem."No.";
+            SalesLines."Unit Price" := ChargeItem."Unit Price";
+            SalesLines."Type" := "Sales Line Type"::"Charge (Item)";
+            SalesLines.Insert();
+        end;
     end;
 }
