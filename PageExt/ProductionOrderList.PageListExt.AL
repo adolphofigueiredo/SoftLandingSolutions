@@ -41,7 +41,8 @@ pageextension 50106 "Production Order List Ext" extends "Production Order List"
         {
             action(ActionName)
             {
-                Caption = '';
+                Caption = 'Stato Ordine';
+                Image = Refresh;
                 ApplicationArea = all;
                 Visible = true;
                 trigger OnAction()
