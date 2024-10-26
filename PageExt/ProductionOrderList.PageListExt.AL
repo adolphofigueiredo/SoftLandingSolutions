@@ -41,7 +41,7 @@ pageextension 50106 "Production Order List Ext" extends "Production Order List"
         {
             action(ActionName)
             {
-                Caption = 'Dio porco';
+                Caption = '';
                 ApplicationArea = all;
                 Visible = true;
                 trigger OnAction()
