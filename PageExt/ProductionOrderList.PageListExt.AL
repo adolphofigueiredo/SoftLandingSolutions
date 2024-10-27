@@ -16,7 +16,7 @@ pageextension 50106 "Production Order List Ext" extends "Production Order List"
                 ApplicationArea = all;
                 Visible = false;
             }
-            field("Prod. cycle line"; Rec."Prod. cycle line")
+            field("Prod. cycle status";Rec."Prod. cycle status")
             {
                 ApplicationArea = all;
             }
@@ -67,13 +67,12 @@ pageextension 50106 "Production Order List Ext" extends "Production Order List"
                 ProductionJrnlMgt.DeleteJnlLines(gg.GetTamplateName(), gg.GetBatchName(), ProdOrder."No.", 10000);
                 ProductionJrnlMgt.CreateJnlLines(ProdOrder, 10000);
                 ProdOrder.CalcFields(ProdOrder."Prod. cycles number");
-                ProdOrder."Prod. cycle line" := Format(CalcolaStato(ProdOrder)) + ' / ' + Format(ProdOrder."Prod. cycles number");
+                ProdOrder."Prod. cycle status" := Format(CalcolaStato(ProdOrder)) + ' / ' + Format(ProdOrder."Prod. cycles number");
                 ProdOrder.Modify();
             end;
         end until ProdOrder.Next() = 0;
 
     end;
-
     internal procedure CalcolaStato(var ProdOrder: Record "Production Order"): Integer
     var
         i: Integer;
@@ -90,7 +89,4 @@ pageextension 50106 "Production Order List Ext" extends "Production Order List"
         end;
         exit(i)
     end;
-
-    var
-        myInt: Integer;
 }

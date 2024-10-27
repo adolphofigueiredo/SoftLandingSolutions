@@ -1,8 +1,5 @@
 pageextension 50100 "Sales Order Ext" extends "Sales Order"
 {
-    layout
-    {
-    }
     actions
     {
         addlast(processing)

@@ -7,17 +7,4 @@ tableextension 50103 "Item Charge Extension" extends "Item Charge"
             Caption = 'Unit Price';
         }
     }
-
-    keys
-    {
-        // Add changes to keys here
-    }
-
-    fieldgroups
-    {
-        // Add changes to field groups here
-    }
-
-    var
-        myInt: Integer;
 }

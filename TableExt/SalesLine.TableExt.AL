@@ -20,17 +20,4 @@ tableextension 50100 "Sales Line Extension" extends "Sales Line"
             
         }
     }
-
-    keys
-    {
-        // Add changes to keys here
-    }
-
-    fieldgroups
-    {
-        // Add changes to field groups here
-    }
-
-    var
-        myInt: Integer;
 }

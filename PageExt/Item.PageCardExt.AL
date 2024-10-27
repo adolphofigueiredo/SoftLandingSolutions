@@ -18,12 +18,4 @@ pageextension 50102 "Item Page Extension" extends "Item Card"
             }
         }
     }
-
-    actions
-    {
-        // Add changes to page actions here
-    }
-
-    var
-        myInt: Integer;
 }

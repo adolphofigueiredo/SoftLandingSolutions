@@ -14,14 +14,5 @@ pageextension 50104 "Sales Order Page List Etension" extends "Sales Order List"
         {
             Visible = false;
         }
-
     }
-
-    actions
-    {
-        // Add changes to page actions here
-    }
-
-    var
-        myInt: Integer;
 }

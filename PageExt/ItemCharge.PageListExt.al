@@ -11,12 +11,4 @@ pageextension 50108 "Item Charge Extension" extends "Item Charges"
             }
         }
     }
-
-    actions
-    {
-        // Add changes to page actions here
-    }
-
-    var
-        myInt: Integer;
 }

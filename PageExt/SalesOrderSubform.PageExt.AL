@@ -1,9 +1,5 @@
 pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform"
 {
-
-    // da implementare in futuro o anche subito
-    // fare in modo che la locatio code sia sempre vuota (SalesOrder.PageExt.al)
-
     layout
     {
         addafter("No.")
@@ -151,33 +147,34 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
         ChargeItem: Record "Item Charge";
     begin
         addLineNo := Rec."Line No.";
-        // controllo che fa eseguire il codice qui sotto solo se e di "Item Type"::"Base Item"
-        DbProduzioneLine.SetRange("Production BOM No.", Rec."No.");
-        repeat begin
-            if DbProduzioneLine.Description <> '' then begin
+        if (Rec.Type = "Sales Line Type"::Item) and (Rec."Item Type" = "Article Type"::"Base Item") then begin
+            DbProduzioneLine.SetRange("Production BOM No.", Rec."No.");
+            repeat begin
+                if DbProduzioneLine.Description <> '' then begin
+                    addLineNo += 10000;
+                    SalesLines."Document Type" := Rec."Document Type";
+                    SalesLines."Document No." := rec."Document No.";
+                    SalesLines."Line No." := addLineNo;
+                    SalesLines.Description := '    ' + DbProduzioneLine.Description;
+                    SalesLines."No." := DbProduzioneLine."No.";
+                    if itemRecord.Get(SalesLines."No.") then begin
+                        SalesLines."Item Type" := itemRecord."Item Type";
+                    end;
+                    SalesLines.Insert();
+                end;
+            end until DbProduzioneLine.Next() = 0;
+            itemRecord.Get(Rec."No.");
+            if ChargeItem.Get(itemRecord."Charge Item") then begin
                 addLineNo += 10000;
                 SalesLines."Document Type" := Rec."Document Type";
                 SalesLines."Document No." := rec."Document No.";
                 SalesLines."Line No." := addLineNo;
-                SalesLines.Description := '    ' + DbProduzioneLine.Description;
-                SalesLines."No." := DbProduzioneLine."No.";
-                if itemRecord.Get(SalesLines."No.") then begin
-                    SalesLines."Item Type" := itemRecord."Item Type";
-                end;
+                SalesLines.Description := ChargeItem.Description;
+                SalesLines."No." := ChargeItem."No.";
+                SalesLines."Unit Price" := ChargeItem."Unit Price";
+                SalesLines."Type" := "Sales Line Type"::"Charge (Item)";
                 SalesLines.Insert();
             end;
-        end until DbProduzioneLine.Next() = 0;
-        itemRecord.Get(Rec."No.");
-        if ChargeItem.Get(itemRecord."Charge Item") then begin
-            addLineNo += 10000;
-            SalesLines."Document Type" := Rec."Document Type";
-            SalesLines."Document No." := rec."Document No.";
-            SalesLines."Line No." := addLineNo;
-            SalesLines.Description := ChargeItem.Description;
-            SalesLines."No." := ChargeItem."No.";
-            SalesLines."Unit Price" := ChargeItem."Unit Price";
-            SalesLines."Type" := "Sales Line Type"::"Charge (Item)";
-            SalesLines.Insert();
         end;
     end;
 }

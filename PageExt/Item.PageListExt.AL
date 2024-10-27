@@ -39,12 +39,4 @@ pageextension 50103 "Item List Extension" extends "Item List"
             Visible = false;
         }
     }
-
-    actions
-    {
-        // Add changes to page actions here
-    }
-
-    var
-        myInt: Integer;
 }
