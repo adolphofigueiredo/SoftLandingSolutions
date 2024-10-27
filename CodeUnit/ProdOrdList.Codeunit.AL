@@ -1,4 +1,4 @@
-codeunit 50101 gg
+codeunit 50101 ProdOrdList
 {
     SingleInstance = true;
     trigger OnRun()

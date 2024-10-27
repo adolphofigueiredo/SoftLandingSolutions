@@ -147,7 +147,7 @@ pageextension 50101 "Sales Order Subform Extension" extends "Sales Order Subform
         ChargeItem: Record "Item Charge";
     begin
         addLineNo := Rec."Line No.";
-        if (Rec.Type = "Sales Line Type"::Item) and (Rec."Item Type" = "Article Type"::"Base Item") then begin
+        if Rec.Type = "Sales Line Type"::Item then begin
             DbProduzioneLine.SetRange("Production BOM No.", Rec."No.");
             repeat begin
                 if DbProduzioneLine.Description <> '' then begin

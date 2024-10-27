@@ -16,7 +16,7 @@ pageextension 50106 "Production Order List Ext" extends "Production Order List"
                 ApplicationArea = all;
                 Visible = false;
             }
-            field("Prod. cycle status";Rec."Prod. cycle status")
+            field("Prod. cycle status"; Rec."Prod. cycle status")
             {
                 ApplicationArea = all;
             }
@@ -37,12 +37,14 @@ pageextension 50106 "Production Order List Ext" extends "Production Order List"
 
     actions
     {
-        addafter("E&ntries")
+        addafter("Pro&d. Order")
         {
-            action(ActionName)
+            action(RefreshProdOrdStatuts)
             {
-                Caption = '';
+                Caption = 'Riaggiorna stato ordini produzione';
+                Image = Refresh;
                 ApplicationArea = all;
+                Promoted = true;
                 Visible = true;
                 trigger OnAction()
                 begin
@@ -56,23 +58,33 @@ pageextension 50106 "Production Order List Ext" extends "Production Order List"
     var
         ProdOrder: Record "Production Order";
         ProductionJrnlMgt: Codeunit "Production Journal Mgt";
-        gg: Codeunit gg;
+        ProdOrdList: Codeunit ProdOrdList;
+        Progress: Dialog;
+        Counter: Integer;
+        ProgressMsg: Label 'Processing......#1######################\';
     begin
+        Counter := 0;
+        Progress.OPEN(ProgressMsg, Counter);
+        Progress.UPDATE(1, Counter);
         ProdOrder.FindSet();
         repeat begin
             if ProdOrder.Status = ProdOrder.Status::Released then begin
                 Clear(ProductionJrnlMgt);
                 ProductionJrnlMgt.SetTemplateAndBatchName();
                 ProductionJrnlMgt.InitSetupValues();
-                ProductionJrnlMgt.DeleteJnlLines(gg.GetTamplateName(), gg.GetBatchName(), ProdOrder."No.", 10000);
+                ProductionJrnlMgt.DeleteJnlLines(ProdOrdList.GetTamplateName(), ProdOrdList.GetBatchName(), ProdOrder."No.", 10000);
                 ProductionJrnlMgt.CreateJnlLines(ProdOrder, 10000);
                 ProdOrder.CalcFields(ProdOrder."Prod. cycles number");
                 ProdOrder."Prod. cycle status" := Format(CalcolaStato(ProdOrder)) + ' / ' + Format(ProdOrder."Prod. cycles number");
                 ProdOrder.Modify();
+                Counter := Counter + 1;
+                Progress.UPDATE(1, Counter);
+                SLEEP(10);
             end;
         end until ProdOrder.Next() = 0;
-
+        Progress.CLOSE();
     end;
+
     internal procedure CalcolaStato(var ProdOrder: Record "Production Order"): Integer
     var
         i: Integer;

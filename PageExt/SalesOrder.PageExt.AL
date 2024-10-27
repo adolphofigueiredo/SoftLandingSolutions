@@ -1,14 +1,45 @@
 pageextension 50100 "Sales Order Ext" extends "Sales Order"
 {
+    layout
+    {
+        addafter(Status)
+        {
+            field(CreatedProdOrder; Rec.CreatedProdOrder)
+            {
+                ApplicationArea = all;
+                Visible = true;
+            }
+        }
+    }
     actions
     {
-        addlast(processing)
+        addfirst(navigation)
         {
-            action(creaOrdineProduzione)
+            action(GoToProdOrder)
+            {
+                Caption = 'Vai a Ordini produzione';
+                ApplicationArea = all;
+                Image = GoTo;
+                RunObject = page "Production Order List";
+                RunPageLink = "Sales Order No." = field("No.");
+                RunPageMode = View;
+                Promoted = true;
+                PromotedCategory = category8;
+                trigger OnAction()
+                begin
+
+                end;
+            }
+        }
+        addafter("S&hipments")
+        {
+            action(CreateProdOrder)
             {
                 Caption = 'Crea Ordine Di Produzione';
                 ApplicationArea = all;
-                Image = Create;
+                Image = Production;
+                Promoted = true;
+                PromotedCategory = Category8;
                 trigger OnAction()
                 var
                     SalesLine: Record "Sales Line";
@@ -32,6 +63,7 @@ pageextension 50100 "Sales Order Ext" extends "Sales Order"
                     end else begin
                         Message('Non ci sono articoli da mettere in produzione.');
                     end;
+                    CurrPage.Update(true);
                 end;
             }
         }
