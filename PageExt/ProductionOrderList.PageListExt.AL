@@ -45,6 +45,7 @@ pageextension 50106 "Production Order List Ext" extends "Production Order List"
                 Image = Refresh;
                 ApplicationArea = all;
                 Promoted = true;
+                PromotedCategory = Category5;
                 Visible = true;
                 trigger OnAction()
                 begin
@@ -66,6 +67,7 @@ pageextension 50106 "Production Order List Ext" extends "Production Order List"
         Counter := 0;
         Progress.OPEN(ProgressMsg, Counter);
         Progress.UPDATE(1, Counter);
+        ProdOrder.SetRange(Status, ProdOrder.Status::Released, ProdOrder.Status::Finished);
         ProdOrder.FindSet();
         repeat begin
             if ProdOrder.Status = ProdOrder.Status::Released then begin
@@ -80,6 +82,11 @@ pageextension 50106 "Production Order List Ext" extends "Production Order List"
                 Counter := Counter + 1;
                 Progress.UPDATE(1, Counter);
                 SLEEP(10);
+            end;
+            if ProdOrder.Status = ProdOrder.Status::Finished then begin
+                ProdOrder.CalcFields(ProdOrder."Prod. cycles number");
+                ProdOrder."Prod. cycle status" := Format(ProdOrder."Prod. cycles number") + ' / ' + Format(ProdOrder."Prod. cycles number");
+                ProdOrder.Modify();
             end;
         end until ProdOrder.Next() = 0;
         Progress.CLOSE();
